@@ -52,41 +52,43 @@
     </div>
 
     <div class="main">
-      <div class="order-tracking">
+      <div class="order-tracking" id="orderTracking">
         <a class="back-to-orders-link link-primary" href="orders.html">
           View all orders
         </a>
 
-        <div class="delivery-date">
-          Arriving on Monday, June 13
+        <div class="delivery-date" id="deliveryDate">
+          <!-- Will be populated by JS -->
         </div>
 
-        <div class="product-info">
-          Black and Gray Athletic Cotton Socks - 6 Pairs
+        <div class="product-info" id="productName">
+          <!-- Will be populated by JS -->
         </div>
 
-        <div class="product-info">
-          Quantity: 1
+        <div class="product-info" id="productQuantity">
+          <!-- Will be populated by JS -->
         </div>
 
-        <img class="product-image" src="images/products/athletic-cotton-socks-6-pairs.jpg">
+        <img class="product-image" id="productImage" src="">
 
         <div class="progress-labels-container">
-          <div class="progress-label">
+          <div class="progress-label" data-status="preparing">
             Preparing
           </div>
-          <div class="progress-label current-status">
+          <div class="progress-label" data-status="shipped">
             Shipped
           </div>
-          <div class="progress-label">
+          <div class="progress-label" data-status="delivered">
             Delivered
           </div>
         </div>
 
         <div class="progress-bar-container">
-          <div class="progress-bar"></div>
+          <div class="progress-bar" id="progressBar"></div>
         </div>
       </div>
     </div>
+
+    <script src="scripts/tracking.js"></script>
   </body>
 </html>

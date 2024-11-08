@@ -75,7 +75,50 @@
 
 .progress-bar {
   height: 100%;
-  background-color: green;
+  background-color: rgb(6, 125, 98);
   border-radius: 50px;
-  width: 50%;
+  transition: width 0.5s ease-in-out;
 }
+
+.order-details-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  column-gap: 25px;
+  row-gap: 30px;
+  align-items: center;
+  padding: 25px 0;
+  border-bottom: 1px solid rgb(231, 231, 231);
+}
+
+.product-image-container {
+  width: 100px;
+  height: 100px;
+  margin-right: 15px;
+}
+
+.product-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.product-details {
+  margin-right: 30px;
+}
+
+.product-name {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.product-delivery-date {
+  margin-bottom: 10px;
+  color: rgb(0, 118, 0);
+}
+
+.product-quantity {
+  margin-bottom: 10px;
+  color: #565959;
+}
+
+/* Add any additional styles you need */
