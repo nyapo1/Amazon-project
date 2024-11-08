@@ -160,7 +160,7 @@ export function renderPaymentSummary() {
       // Hide message after 3 seconds and redirect
       setTimeout(() => {
         messageElement.classList.remove('success');
-        window.location.href = '/amazon-project/lesson-17/orders.html';
+        window.location.href = 'orders.html';
       }, 1000);
     });
 }
