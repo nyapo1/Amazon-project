@@ -1,26 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Get the order ID from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const orderId = urlParams.get('orderId');
-
-    if (!orderId) {
-        console.error('No order ID provided');
-        document.getElementById('orderTracking').innerHTML = 
-            '<p>No order ID provided. Please check your order confirmation email.</p>';
-        return;
-    }
-
-    // Try to get the order data
-    const orderData = JSON.parse(localStorage.getItem(`order_${orderId}`));
     
+    const trackingContent = document.getElementById('trackingContent');
+    const noOrderMessage = document.getElementById('noOrderMessage');
+
+    // Get the tracking order from localStorage
+    const orderData = JSON.parse(localStorage.getItem('trackingOrder'));
+
     if (!orderData) {
-        console.error('Order not found:', orderId);
-        document.getElementById('orderTracking').innerHTML = 
-            '<p>Order not found. Please check your order ID.</p>';
+        console.error('Order not found');
+        trackingContent.style.display = 'none';
+        noOrderMessage.style.display = 'block';
         return;
     }
 
-    // If we have the order data, update the page
+    trackingContent.style.display = 'block';
+    noOrderMessage.style.display = 'none';
+
+    // Update the tracking page with the order data
     updateTrackingPage(orderData);
 });
 

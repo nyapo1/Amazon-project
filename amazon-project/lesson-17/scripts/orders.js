@@ -96,9 +96,9 @@ function renderOrders() {
               </div>
 
               <div class="product-actions">
-                <button class="track-package-button button-secondary" data-order-id="${order.id}">
+                <a href="tracking.html?orderId=${order.id}" class="track-package-button button-secondary" data-order-id="${order.id}">
                   Track package
-                </button>
+                </a>
               </div>
             `;
           }).join('')}
