@@ -1,81 +1,104 @@
-import {products} from '../data/products.js';
 import {formatCurrency} from './utils/money.js';
 
 let productsHTML = '';
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let products = [];
 
-function renderProducts(productsToRender) {
-  productsHTML = '';
+async function fetchProducts() {
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const productsGrid = document.querySelector('.js-products-grid');
   
-  const showAllButton = document.querySelector('.js-show-all-products');
-  if (productsToRender.length < products.length) {
-    showAllButton.style.display = 'block';
-  } else {
-    showAllButton.style.display = 'none';
+  try {
+    // Show loading spinner, hide products grid
+    loadingSpinner.style.display = 'flex';
+    productsGrid.style.display = 'none';
+
+    const response = await fetch('http://localhost:5000/api/products');
+    const data = await response.json();
+    
+    if (data.length === 0) {
+      console.log('No products returned from API');
+    }
+    
+    renderProducts(data);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    productsGrid.innerHTML = '<p class="error-message">Error loading products. Please try again later.</p>';
+  } finally {
+    // Hide loading spinner, show products grid
+    loadingSpinner.style.display = 'none';
+    productsGrid.style.display = 'grid';
   }
+}
 
-  productsToRender.forEach((product) => {
-    productsHTML += `
-      <div class="product-container">
-        <div class="product-image-container">
-          <img class="product-image"
-            src="${product.image}">
-        </div>
-
-        <div class="product-name limit-text-to-2-lines">
-          ${product.name}
-        </div>
-
-        <div class="product-rating-container">
-          <img class="product-rating-stars"
-            src="images/ratings/rating-${product.rating.stars * 10}.png">
-          <div class="product-rating-count link-primary">
-            ${product.rating.count}
-          </div>
-        </div>
-
-        <div class="product-price">
-          $${(product.priceCents / 100).toFixed(2)}
-        </div>
-
-        <div class="product-quantity-container">
-          <select class="js-quantity-selector-${product.id}">
-            <option selected value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-          </select>
-        </div>
-
-        <div class="product-spacer"></div>
-
-        <div class="added-to-cart">
-          <img src="images/icons/checkmark.png">
-          Added
-        </div>
-
-        <button class="add-to-cart-button button-primary js-add-to-cart"
-        data-product-id="${product.id}">
-          Add to Cart
-        </button>
-      </div>
-    `;
+function renderProducts(products) {
+  console.log('Rendering products:', products);
+  
+  let productsHTML = '';
+  
+  products.forEach((product) => {
+    productsHTML += renderProduct(product);
   });
 
   document.querySelector('.js-products-grid').innerHTML = productsHTML;
 }
 
-function loadProducts() {
-  renderProducts(products);
+function renderProduct(product) {
+  const starNumber = Math.round(product.rating.stars * 10);
+  
+  return `
+    <div class="product-container">
+      <div class="product-image-container">
+        <img class="product-image" src="${product.image}">
+      </div>
+
+      <div class="product-name limit-text-to-2-lines">
+        ${product.name}
+      </div>
+
+      <div class="product-rating-container">
+        <img class="product-rating-stars"
+          src="images/ratings/rating-${starNumber}.png">
+        <div class="product-rating-count link-primary">
+          ${product.rating.count}
+        </div>
+      </div>
+
+      <div class="product-price">
+        $${(product.priceCents / 100).toFixed(2)}
+      </div>
+
+      <div class="product-quantity-container">
+        <select class="js-quantity-selector-${product.id}">
+          <option selected value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+
+      <div class="product-spacer"></div>
+
+      <div class="added-to-cart">
+        <img src="images/icons/checkmark.png">
+        Added
+      </div>
+
+      <button class="add-to-cart-button button-primary js-add-to-cart"
+        data-product-id="${product.id}">
+        Add to Cart
+      </button>
+    </div>
+  `;
 }
 
-function handleSearch(event) {
+async function handleSearch(event) {
   const searchInput = document.querySelector('.search-bar');
   const searchTerm = searchInput.value.toLowerCase();
   
@@ -84,11 +107,18 @@ function handleSearch(event) {
     return;
   }
   
-  const filteredProducts = products.filter((product) => 
-    product.name.toLowerCase().includes(searchTerm)
-  );
-  
-  renderProducts(filteredProducts);
+  try {
+    const response = await fetch(`http://localhost:5000/api/products/search?q=${searchTerm}`);
+    const filteredProducts = await response.json();
+    renderProducts(filteredProducts);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    // Fallback to client-side filtering if API fails
+    const filteredProducts = products.filter((product) => 
+      product.name.toLowerCase().includes(searchTerm)
+    );
+    renderProducts(filteredProducts);
+  }
 }
 
 function showAllProducts() {
@@ -98,10 +128,10 @@ function showAllProducts() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadProducts();
+  fetchProducts();
   
   const searchInput = document.querySelector('.search-bar');
-  searchInput.addEventListener('input', handleSearch);
+  searchInput.addEventListener('input', debounce(handleSearch, 300));
   
   const showAllButton = document.querySelector('.js-show-all-products');
   showAllButton.addEventListener('click', showAllProducts);
@@ -135,8 +165,15 @@ function addToCart(productId) {
     }
   });
 
-  const quantitySelect = document.querySelector(`.js-quantity-selector-${productId}`);
-  const quantity = Number(quantitySelect.value);
+  const quantitySelector = document.querySelector(`.js-quantity-selector-${productId}`);
+  
+  // Add error handling
+  if (!quantitySelector) {
+    console.error(`Quantity selector not found for product ${productId}`);
+    return;
+  }
+  
+  const quantity = Number(quantitySelector.value);
 
   if (matchingItem) {
     matchingItem.quantity += quantity;
@@ -159,4 +196,17 @@ function addToCart(productId) {
   setTimeout(() => {
     addedMessage.classList.remove('added-to-cart-visible');
   }, 2000);
+}
+
+// Add debounce utility function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
 }

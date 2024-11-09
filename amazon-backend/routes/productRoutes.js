@@ -1,28 +1,38 @@
 const express = require('express');
 const router = express.Router();
-const Product = require('../models/Product');
+const productController = require('../controllers/productController');
 
-// Get all products
-router.get('/', async (req, res) => {
+// Simple in-memory cache
+let productsCache = null;
+let lastFetched = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Routes
+router.get('/', productController.getProducts);
+router.get('/search', productController.searchProducts);
+router.get('/:id', productController.getProduct);
+router.post('/', productController.createProduct);
+
+router.get('/api/products', async (req, res) => {
   try {
-    const products = await Product.find({});
+    // Check if we have valid cached data
+    if (productsCache && lastFetched && (Date.now() - lastFetched) < CACHE_DURATION) {
+      return res.json(productsCache);
+    }
+
+    // If no cache or expired, fetch from database
+    const products = await Product.find({})
+      .select('id name image rating priceCents') // Only select fields we need
+      .lean(); // Convert to plain JavaScript objects
+
+    // Update cache
+    productsCache = products;
+    lastFetched = Date.now();
+    
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Get single product
-router.get('/:id', async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ message: 'Product not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Error fetching products' });
   }
 });
 

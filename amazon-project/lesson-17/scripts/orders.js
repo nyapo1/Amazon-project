@@ -96,7 +96,7 @@ function renderOrders() {
               </div>
 
               <div class="product-actions">
-                <a href="tracking.html?orderId=${order.id}" class="track-package-button button-secondary" data-order-id="${order.id}">
+                <a href="tracking.html?orderId=${order.id}" class="track-package-button button-secondary" data-order-id="${order.id}" data-item-id="${item.product.id}">
                   Track package
                 </a>
               </div>
@@ -137,11 +137,29 @@ document.querySelector('.orders-grid').addEventListener('click', (event) => {
   const trackButton = event.target.closest('.track-package-button');
   if (trackButton) {
     const orderId = trackButton.dataset.orderId;
-    // Store the order data in localStorage for tracking page
+    const itemId = trackButton.dataset.itemId;
+    
+    // Get all orders from localStorage
     const orders = JSON.parse(localStorage.getItem('orders')) || [];
-    const orderData = orders.find(order => order.id === orderId);
-    localStorage.setItem('trackingOrder', JSON.stringify(orderData));
-    window.location.href = `tracking.html?orderId=${orderId}`;
+    
+    // Find the specific order
+    const order = orders.find(order => order.id === orderId);
+    
+    if (order) {
+      // Find the specific item in the order
+      const item = order.items.find(item => item.product.id === itemId);
+      
+      if (item) {
+        // Store only this specific item for tracking
+        const trackingData = {
+          orderId: orderId,
+          orderDate: order.orderDate,
+          items: [item] // Only store the clicked item
+        };
+        
+        localStorage.setItem('trackingOrder', JSON.stringify(trackingData));
+      }
+    }
   }
 
   const buyAgainButton = event.target.closest('.buy-again-button');

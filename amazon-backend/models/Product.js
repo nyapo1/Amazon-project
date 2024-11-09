@@ -1,23 +1,39 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  id: String,
-  image: String,
-  name: String,
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  image: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
   rating: {
-    stars: Number,
-    count: Number
+    stars: {
+      type: Number,
+      required: true
+    },
+    count: {
+      type: Number,
+      required: true
+    }
   },
-  priceCents: Number,
+  priceCents: {
+    type: Number,
+    required: true
+  },
   keywords: [String],
-  type: {
-    type: String,
-    default: null
-  },
-  sizeChartLink: {
-    type: String,
-    default: null
-  }
+  type: String,
+  sizeChartLink: String
 });
+
+// Add basic index for common searches
+productSchema.index({ name: 1 });
 
 module.exports = mongoose.model('Product', productSchema); 
