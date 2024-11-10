@@ -22,17 +22,19 @@
     <div class="amazon-header">
       <div class="amazon-header-left-section">
         <a href="index.html" class="header-link">
-          <img class="amazon-logo"
-            src="images/amazon-logo-white.png">
-          <img class="amazon-mobile-logo"
-            src="images/amazon-mobile-logo-white.png">
+          <div class="amazon-logo">StyleHub Online Shop</div>
+          <div class="amazon-mobile-logo">StyleHub</div>
+        </a>
+        <a href="index.html" class="header-link">
+          <div class="amazon-logo" style="color: white; font-size: 24px; font-weight: bold;">Home</div>
+          <div class="amazon-mobile-logo" style="color: white; font-size: 20px; font-weight: bold;">Home</div>
         </a>
       </div>
 
       <div class="amazon-header-middle-section">
         <input class="search-bar" 
         id="search-input" 
-        type="text" placeholder="Search Products..."
+        type="search" placeholder="Search Products..."
         onkeyup="handleSearch(event)">
 
         <button class="search-button" onclick="handleSearch()">
