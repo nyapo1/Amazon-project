@@ -32,7 +32,6 @@ async function fetchProducts() {
 }
 
 function renderProducts(products) {
-  console.log('Rendering products:', products);
   
   let productsHTML = '';
   
