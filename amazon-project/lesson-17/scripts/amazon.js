@@ -12,7 +12,7 @@ async function fetchProducts() {
     loadingSpinner.style.display = 'flex';
     productsGrid.style.display = 'none';
 
-    const response = await fetch('https://amazon-backend-2ul15tj05-felixs-projects-149b1fd9.vercel.app');
+    const response = await fetch('http://localhost:3000/products');
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
