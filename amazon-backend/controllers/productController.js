@@ -49,9 +49,15 @@ const searchProducts = async (req, res) => {
   }
 };
 
+// Test function
+const testFunction = (req, res) => {
+  res.send('This is a test response');
+};
+
 module.exports = {
   getProducts,
   getProduct,
   createProduct,
-  searchProducts
+  searchProducts,
+  testFunction
 }; 
