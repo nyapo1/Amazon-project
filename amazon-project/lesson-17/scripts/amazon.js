@@ -13,7 +13,8 @@ async function fetchProducts() {
     loadingSpinner.style.display = 'flex';
     productsGrid.style.display = 'none';
 
-    const response = await fetch('http://localhost:5000/api/products');
+    const response = await fetch('http://192.168.1.5:5000/api/products');
+    // const response = await fetch('http://localhost:5000/api/products');
     const data = await response.json();
     
     if (data.length === 0) {
