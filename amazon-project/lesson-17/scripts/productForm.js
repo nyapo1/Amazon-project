@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
             errorState.style.display = 'none';
             
 
-            const response = await fetch('http://localhost:5000/api/products');
+            const response = await fetch('http://localhost:3000/products');
             if (!response.ok) throw new Error('Failed to fetch products');
             
             const products = await response.json();
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.editProduct = async function(productId) {
         try {
-            const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+            const response = await fetch('http://localhost:3000/products');
             const product = await response.json();
             
             const fields = ['Name', 'Price', 'Keywords'];

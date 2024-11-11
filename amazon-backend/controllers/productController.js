@@ -1,13 +1,14 @@
-const Product = require('../models/Product');
+const Product = require('../models/Product.js');
 
 // Get all products
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({});
+    const products = await Product.find({}).lean(); // Ensure data is fetched as plain JavaScript objects
     console.log(`Found ${products.length} products`);
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching products:', error); // Log error for debugging
+    res.status(500).json({ message: 'Error fetching products' });
   }
 };
 

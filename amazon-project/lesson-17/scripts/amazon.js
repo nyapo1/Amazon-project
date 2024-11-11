@@ -9,24 +9,27 @@ async function fetchProducts() {
   const productsGrid = document.querySelector('.js-products-grid');
   
   try {
-    // Show loading spinner, hide products grid
     loadingSpinner.style.display = 'flex';
     productsGrid.style.display = 'none';
 
-    const response = await fetch('http://192.168.1.5:5000/api/products');
-    // const response = await fetch('http://localhost:5000/api/products');
-    const data = await response.json();
-    
-    if (data.length === 0) {
+    const response = await fetch('https://amazon-backend-2ul15tj05-felixs-projects-149b1fd9.vercel.app');
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const products = await response.json();
+    console.log(products);
+
+    if (products.length === 0) {
       console.log('No products returned from API');
     }
     
-    renderProducts(data);
+    renderProducts(products);
   } catch (error) {
     console.error('Error fetching products:', error);
     productsGrid.innerHTML = '<p class="error-message">Error loading products. Please try again later.</p>';
   } finally {
-    // Hide loading spinner, show products grid
     loadingSpinner.style.display = 'none';
     productsGrid.style.display = 'grid';
   }
@@ -108,12 +111,24 @@ async function handleSearch(event) {
   }
   
   try {
-    const response = await fetch(`http://localhost:5000/api/products/search?q=${searchTerm}`);
+    const response = await fetch(`https://amazon-backend-iu6kab4tw-felixs-projects-149b1fd9.vercel.app/api/products/search?q=${searchTerm}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const filteredProducts = await response.json();
     renderProducts(filteredProducts);
   } catch (error) {
     console.error('Error searching products:', error);
-    // Fallback to client-side filtering if API fails
     const filteredProducts = products.filter((product) => 
       product.name.toLowerCase().includes(searchTerm)
     );
