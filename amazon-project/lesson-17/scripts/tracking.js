@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get the tracking order from localStorage
     const orderData = JSON.parse(localStorage.getItem('trackingOrder'));
-    console.log('Order data:', orderData);
+    
 
     if (!orderData || !orderData.items || orderData.items.length === 0) {
         console.error('No order data found');
