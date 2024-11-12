@@ -1,20 +1,16 @@
 {
-  "dependencies": {
-    "compression": "^1.7.5",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "json-server": "^0.17.4",
-    "mongodb": "^6.10.0",
-    "mongoose": "^7.8.2"
-  },
+  "name": "amazon-backend",
+  "version": "1.0.0",
+  "description": "Amazon clone backend",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "seed": "node seeder.js"
+    "start": "vercel dev",
+    "deploy": "vercel --prod"
   },
-  "devDependencies": {
-    "husky": "^9.1.6",
-    "nodemon": "^2.0.22"
+  "dependencies": {
+    "@vercel/node": "3.0.12",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }

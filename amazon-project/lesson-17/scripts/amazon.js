@@ -1,227 +1,176 @@
-import {formatCurrency} from './utils/money.js';
+import { API_URL } from './config.js';
+import { handleSearch } from './search.js';
+import { addToCart, cart } from '../data/cart.js';
 
-let productsHTML = '';
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-let products = [];
+// Make handleSearch available to HTML
+window.handleSearch = handleSearch;
 
-async function fetchProducts() {
-  const loadingSpinner = document.getElementById('loadingSpinner');
-  const productsGrid = document.querySelector('.js-products-grid');
-  
-  try {
-    loadingSpinner.style.display = 'flex';
-    productsGrid.style.display = 'none';
-
-    const response = await fetch('http://localhost:3000/products');
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const products = await response.json();
-    console.log(products);
-
-    if (products.length === 0) {
-      console.log('No products returned from API');
-    }
-    
-    renderProducts(products);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    productsGrid.innerHTML = '<p class="error-message">Error loading products. Please try again later.</p>';
-  } finally {
-    loadingSpinner.style.display = 'none';
-    productsGrid.style.display = 'grid';
-  }
-}
-
-function renderProducts(products) {
-  
-  let productsHTML = '';
-  
-  products.forEach((product) => {
-    productsHTML += renderProduct(product);
-  });
-
-  document.querySelector('.js-products-grid').innerHTML = productsHTML;
-}
-
-function renderProduct(product) {
-  const starNumber = Math.round(product.rating.stars * 10);
-  
-  return `
-    <div class="product-container">
-      <div class="product-image-container">
-        <img class="product-image" src="${product.image}">
-      </div>
-
-      <div class="product-name limit-text-to-2-lines">
-        ${product.name}
-      </div>
-
-      <div class="product-rating-container">
-        <img class="product-rating-stars"
-          src="images/ratings/rating-${starNumber}.png">
-        <div class="product-rating-count link-primary">
-          ${product.rating.count}
-        </div>
-      </div>
-
-      <div class="product-price">
-        $${(product.priceCents / 100).toFixed(2)}
-      </div>
-
-      <div class="product-quantity-container">
-        <select class="js-quantity-selector-${product.id}">
-          <option selected value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-        </select>
-      </div>
-
-      <div class="product-spacer"></div>
-
-      <div class="added-to-cart">
-        <img src="images/icons/checkmark.png">
-        Added
-      </div>
-
-      <button class="add-to-cart-button button-primary js-add-to-cart"
-        data-product-id="${product.id}">
-        Add to Cart
-      </button>
-    </div>
-  `;
-}
-
-async function handleSearch(event) {
-  const searchInput = document.querySelector('.search-bar');
-  const searchTerm = searchInput.value.toLowerCase();
-  
-  if (searchTerm.trim() === '') {
-    renderProducts(products);
-    return;
-  }
-  
-  try {
-    const response = await fetch(`https://amazon-backend-iu6kab4tw-felixs-projects-149b1fd9.vercel.app/api/products/search?q=${searchTerm}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      mode: 'cors',
-      credentials: 'omit'
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const filteredProducts = await response.json();
-    renderProducts(filteredProducts);
-  } catch (error) {
-    console.error('Error searching products:', error);
-    const filteredProducts = products.filter((product) => 
-      product.name.toLowerCase().includes(searchTerm)
-    );
-    renderProducts(filteredProducts);
-  }
-}
-
-function showAllProducts() {
-  const searchInput = document.querySelector('.search-bar');
-  searchInput.value = '';
-  renderProducts(products);
-}
-
+// Load products when page loads
 document.addEventListener('DOMContentLoaded', () => {
-  fetchProducts();
-  
-  const searchInput = document.querySelector('.search-bar');
-  searchInput.addEventListener('input', debounce(handleSearch, 300));
-  
-  const showAllButton = document.querySelector('.js-show-all-products');
-  showAllButton.addEventListener('click', showAllProducts);
-  
-  updateCartQuantity();
-  
-  document.querySelector('.js-products-grid').addEventListener('click', (event) => {
-    if (event.target.classList.contains('js-add-to-cart')) {
-      const productId = event.target.dataset.productId;
-      addToCart(productId);
-    }
-  });
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const productsGrid = document.querySelector('.js-products-grid');
+    
+    loadingSpinner.style.display = 'flex';
+    productsGrid.innerHTML = ''; // Clear any existing content
+    
+    console.log('Fetching products from:', `${API_URL}/products`); // Log the URL being fetched
+
+    fetch(`${API_URL}/products`)
+        .then(response => {
+            console.log('Response status:', response.status); // Log the response status
+            console.log('Response headers:', response.headers); // Log headers to check CORS
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(products => {
+            console.log('Products received:', products); // Log the products data
+            
+            if (!products) {
+                throw new Error('No data received from server');
+            }
+            
+            renderProducts(products);
+        })
+        .catch(error => {
+            console.error('Detailed error information:', {
+                message: error.message,
+                stack: error.stack,
+                url: `${API_URL}/products`
+            });
+            
+            // Display error message to user
+            productsGrid.innerHTML = `
+                <div class="error-message" style="
+                    text-align: center;
+                    width: 100%;
+                    padding: 20px;
+                    color: red;
+                    font-size: 18px;">
+                    <p>Sorry, there was a problem loading the products.</p>
+                    <p>Error details: ${error.message}</p>
+                    <p>Please try refreshing the page or try again later.</p>
+                    <p>If the problem persists, check the console for more details.</p>
+                </div>
+            `;
+        })
+        .finally(() => {
+            loadingSpinner.style.display = 'none';
+        });
+
+    // Update cart quantity display
+    updateCartQuantity();
 });
 
-function updateCartQuantity() {
-  const cartQuantity = document.querySelector('.js-cart-quantity');
-  
-  const totalQuantity = cart.reduce((total, item) => {
-    return total + item.quantity;
-  }, 0);
-
-  cartQuantity.innerHTML = totalQuantity;
-}
-
-function addToCart(productId) {
-  let matchingItem;
-
-  cart.forEach((item) => {
-    if (productId === item.productId) {
-      matchingItem = item;
+function renderProducts(products) {
+    const productsGrid = document.querySelector('.js-products-grid');
+    
+    if (!products || products.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="no-products-message">
+                No products found.
+            </div>
+        `;
+        return;
     }
-  });
 
-  const quantitySelector = document.querySelector(`.js-quantity-selector-${productId}`);
-  
-  // Add error handling
-  if (!quantitySelector) {
-    console.error(`Quantity selector not found for product ${productId}`);
-    return;
-  }
-  
-  const quantity = Number(quantitySelector.value);
+    productsGrid.innerHTML = products.map(product => `
+        <div class="product-container">
+            <div class="product-image-container">
+                <img class="product-image" src="${product.image}">
+            </div>
+            
+            <div class="product-name limit-text-to-2-lines">
+                ${product.name}
+            </div>
 
-  if (matchingItem) {
-    matchingItem.quantity += quantity;
-  } else {
-    cart.push({
-      productId: productId,
-      quantity: quantity
+            <div class="product-rating-container">
+                <img class="product-rating-stars" src="images/ratings/rating-${product.rating.stars * 10}.png">
+                <div class="product-rating-count link-primary">
+                    ${product.rating.count}
+                </div>
+            </div>
+
+            <div class="product-price">
+                $${(product.priceCents / 100).toFixed(2)}
+            </div>
+
+            <div class="product-quantity-container">
+                <select class="js-quantity-selector-${product.id}">
+                    <option selected value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+
+            <div class="product-spacer"></div>
+
+            <div class="added-to-cart js-added-to-cart-${product.id}">
+                <img src="images/icons/checkmark.png">
+                Added
+            </div>
+
+            <button class="add-to-cart-button button-primary js-add-to-cart"
+                data-product-id="${product.id}">
+                Add to Cart
+            </button>
+        </div>
+    `).join('');
+
+    // Add click event listeners to all "Add to Cart" buttons
+    document.querySelectorAll('.js-add-to-cart').forEach(button => {
+        button.addEventListener('click', () => {
+            const productId = button.dataset.productId;
+            const quantitySelector = document.querySelector(`.js-quantity-selector-${productId}`);
+            const quantity = Number(quantitySelector.value);
+
+            // Add to cart multiple times based on quantity
+            for (let i = 0; i < quantity; i++) {
+                addToCart(productId);
+            }
+
+            // Update cart quantity display
+            updateCartQuantity();
+
+            // Show the "Added" message
+            const addedMessage = document.querySelector(`.js-added-to-cart-${productId}`);
+            addedMessage.style.opacity = '1';
+
+            // Hide the "Added" message after 2 seconds
+            setTimeout(() => {
+                addedMessage.style.opacity = '0';
+            }, 2000);
+        });
     });
-  }
-
-  localStorage.setItem('cart', JSON.stringify(cart));
-  updateCartQuantity();
-
-  // Show the "Added" message
-  const addedMessage = document.querySelector(
-    `[data-product-id="${productId}"]`)
-    .previousElementSibling;
-  addedMessage.classList.add('added-to-cart-visible');
-
-  setTimeout(() => {
-    addedMessage.classList.remove('added-to-cart-visible');
-  }, 2000);
 }
 
-// Add debounce utility function
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
+// Add this function to update cart quantity
+function updateCartQuantity() {
+    let  cartQuantityElement = document.querySelector('.js-cart-quantity');
+
+    
+    
+    // Calculate total quantity across all items
+    const totalQuantity = cart.reduce((total, item) => {
+        return total + item.quantity;
+    }, 0);
+    
+    // Update the cart quantity display
+    cartQuantityElement.textContent = totalQuantity;
+    
+    // Optionally hide the badge if cart is empty
+    if (totalQuantity === 0) {
+        cartQuantityElement.style.display = 'none';
+    } else {
+        cartQuantityElement.style.display = 'flex';
+    }
 }

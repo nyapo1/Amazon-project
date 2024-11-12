@@ -1,3 +1,5 @@
+import { API_URL } from './config.js';
+
 document.addEventListener('DOMContentLoaded', function() {
     const loadingState = document.getElementById('loadingState');
     const productList = document.getElementById('productList');
@@ -53,12 +55,23 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingState.style.display = 'flex';
             errorState.style.display = 'none';
             
+            console.log('Fetching products from:', `${API_URL}/products`); // Log the URL being fetched
 
-            const response = await fetch('http://localhost:3000/products');
-            if (!response.ok) throw new Error('Failed to fetch products');
-            
+            const response = await fetch(`${API_URL}/products`);
+            console.log('Response status:', response.status); // Log the response status
+            console.log('Response headers:', response.headers); // Log headers to check CORS
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const products = await response.json();
-            
+            console.log('Products received:', products); // Log the products data
+
+            if (!products) {
+                throw new Error('No data received from server');
+            }
+
             productList.innerHTML = products.map(product => `
                 <div class="product-card">
                     <img src="${product.image}" alt="${product.name}" class="product-image">
@@ -95,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.editProduct = async function(productId) {
         try {
-            const response = await fetch('http://localhost:3000/products');
+            const response = await fetch(`${API_URL}/products`);
             const product = await response.json();
             
             const fields = ['Name', 'Price', 'Keywords'];
