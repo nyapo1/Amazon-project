@@ -1,9 +1,9 @@
 import cors from '../cors';
-import { products } from '../../data/db.json';
+import { products } from '../../data/products.js';
 
 export default async function handler(req, res) {
-  // Handle CORS
-  if (cors(req, res)) return;
+  // Apply CORS
+  if (await cors(req, res)) return;
 
   if (req.method === 'GET') {
     const { q } = req.query;

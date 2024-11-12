@@ -15,16 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('Fetching products from:', `${API_URL}/products`); // Log the URL being fetched
 
-    fetch(`${API_URL}/products`)
-        .then(response => {
-            console.log('Response status:', response.status); // Log the response status
-            console.log('Response headers:', response.headers); // Log headers to check CORS
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
+    fetchProducts()
         .then(products => {
             console.log('Products received:', products); // Log the products data
             
@@ -63,6 +54,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update cart quantity display
     updateCartQuantity();
 });
+
+async function fetchProducts() {
+    try {
+        const response = await fetch(`${API_URL}/products`, {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+    }
+}
 
 function renderProducts(products) {
     const productsGrid = document.querySelector('.js-products-grid');
