@@ -57,11 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchProducts() {
     try {
+        console.log('Fetching products from:', `${API_URL}/products`);
         const response = await fetch(`${API_URL}/products`, {
-            credentials: 'include',
+            method: 'GET',
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
         });
 
         if (!response.ok) {
@@ -69,14 +71,19 @@ async function fetchProducts() {
         }
 
         const data = await response.json();
+        console.log('Products data received:', data);
         return data;
     } catch (error) {
         console.error('Error fetching products:', error);
+        if (error.message.includes('Failed to fetch')) {
+            throw new Error('Unable to connect to the server.');
+        }
         throw error;
     }
 }
 
 function renderProducts(products) {
+    console.log('Rendering products:', products); // Add this line for debugging
     const productsGrid = document.querySelector('.js-products-grid');
     
     if (!products || products.length === 0) {
@@ -131,8 +138,7 @@ function renderProducts(products) {
                 Added
             </div>
 
-            <button class="add-to-cart-button button-primary js-add-to-cart"
-                data-product-id="${product.id}">
+            <button class="add-to-cart-button button-primary js-add-to-cart" data-product-id="${product.id}">
                 Add to Cart
             </button>
         </div>
